@@ -1,0 +1,77 @@
+<!--
+ * @Author: hansen
+ * @Date: 2023-04-06 16:25:54
+ * @LastEditors: hansen
+ * @LastEditTime: 2023-04-06 17:05:53
+ * @FilePath: \user-endd:\project\webgl-three-learn\2.4attibute变量\index.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../lib/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #canvas {
+            background-color: aliceblue;
+            margin: 100px auto;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"> 此浏览器不支持canvas </canvas>
+
+    <script>
+        const ctx = document.getElementById('canvas');
+        const gl = ctx.getContext('webgl');
+
+        /* 创建着色器 */
+        const VERTEX_SHADER_SOURCE = `
+            // 只传递顶点数据
+            attribute vec4 aPosition;
+            void main() {
+                gl_Position = aPosition;
+                gl_PointSize = 10.0;
+            }
+        `;// 顶点着色器
+
+        const FRAGMENT_SHADER_SOURCE = `
+            void main() {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+        `;// 片元着色器
+
+        const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+        const aPosition = gl.getAttribLocation(program, 'aPosition');
+
+        // gl.vertexAttrib4f(aPosition, 0.5,0.5,0.0,0.8) // rgba
+        // gl.vertexAttrib3f(aPosition, 0.5,0.5,0.0)
+        // gl.vertexAttrib2f(aPosition, 0.5,0.5)
+        // gl.vertexAttrib1f(aPosition, 0.5);
+
+        let x = -1.0;
+        let y = -1.0;
+        setInterval(() => {
+            x += 0.1;
+            y += 0.2;
+            if (x > 1.0) {
+                x = -1.0;
+            }
+            if (y > 1.0) {
+                y = -1.0;
+            }
+            gl.vertexAttrib2f(aPosition, x,y)
+            gl.drawArrays(gl.POINTS, 0, 1);
+
+        }, 500);
+
+    </script>
+  </body>
+</html>
