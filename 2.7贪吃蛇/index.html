@@ -1,0 +1,172 @@
+<!--
+ * @Author: hansen
+ * @Date: 2023-04-06 16:25:54
+ * @LastEditors: hansen
+ * @LastEditTime: 2023-04-07 18:29:53
+ * @FilePath: \user-endd:\project\webgl-three-learn\2.7贪吃蛇\index.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../lib/index.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        margin: 50px auto 0;
+        display: block;
+        background: rgb(221, 221, 214);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"> 此浏览器不支持canvas </canvas>
+
+    <script>
+      const ctx = document.getElementById("canvas");
+      const gl = ctx.getContext("webgl");
+
+      /* 创建着色器 */
+      const VERTEX_SHADER_SOURCE = `
+            // 只传递顶点数据
+            attribute vec4 aPosition;
+            void main() {
+                gl_Position = aPosition;
+                gl_PointSize = 10.0;
+            }
+        `; // 顶点着色器
+
+      const FRAGMENT_SHADER_SOURCE = `
+            precision mediump float;
+            uniform vec2 uColor;
+            void main() {
+                gl_FragColor = vec4(uColor.r, uColor.g, 0.0,1.0); // vec4
+            }
+        `; // 片元着色器
+
+      const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+
+      const aPosition = gl.getAttribLocation(program, "aPosition"); // 位置信息
+      const uColor = gl.getUniformLocation(program, "uColor"); // 颜色信息
+
+      /* 蛇的长度 */
+      let points = [
+        {
+          x: 0,
+          y: 0,
+        },
+      ];
+      
+      /* 食物的坐标 */
+      const random = {
+        isConnect: true,
+      };
+
+      /* 移动的速度 */
+      let originSpeed = 0.02;
+
+      /* 行动的速度 */
+      let speed = originSpeed;
+
+      /* 移动的方向 */
+      let direction = "x";
+
+      /* 允许吃掉食物的误差范围 */
+      let base = 1.5;
+
+      document.onkeydown = (event) => {
+        switch (event.keyCode) {
+          case 37: // 左
+            direction = "x";
+            speed = -originSpeed;
+            break;
+          case 38: // 上
+            direction = "y";
+            speed = originSpeed;
+            break;
+          case 39: // 右
+            direction = "x";
+            speed = originSpeed;
+            break;
+          case 40: // 下
+            direction = "y";
+            speed = -originSpeed;
+            break;
+        }
+      };
+
+      const createRandom = () => {
+        if (random.isConnect) {
+          random.x = Math.random() * 2 - 1; // (0, 2) - 1 = (-1, 1)
+          random.y = Math.random() * 2 - 1;
+          random.isConnect = false;
+        }
+      };
+
+      let timer = null;
+      const start = () => {
+        timer = setInterval(() => {
+          if (points[0].x > 1.0 || points[0].x < -1.0 || points[0].y < -1.0 || points[0].y > 1.0) {
+            alert("游戏结束！");
+            restart();
+          }
+
+          /* 判断是否碰上食物, 都是蛇头有没有碰上, points[0].x points[0].y都是移动的点 */
+          if (
+            // 4个方向上完全碰上，应该是超过去了
+            points[0].x > random.x - base * originSpeed && // 往右超
+            points[0].x < random.x + base * originSpeed && // 左超
+            points[0].y < random.y + base * originSpeed && // 下超
+            points[0].y > random.y - base * originSpeed // 上超
+          ) {
+            /* 碰上了就营造新的点，其实新的点都是放在第二位 */
+            points.push({ x: random.x, y: random.y });
+            random.isConnect = true;
+          }
+          createRandom();
+          draw();
+        }, 100);
+      };
+      start();
+
+      const draw = () => {
+        gl.vertexAttrib3f(aPosition, random.x, random.y, 0.0); // 记录食物的位置信息
+        gl.uniform2f(uColor, Math.random(), Math.random()); // 这边是rgba的颜色值
+        gl.drawArrays(gl.POINTS, 0, 1); // 绘制位置信息
+
+        let prex = 0;
+        let prey = 0;
+        /* 让连成蛇的关键代码 */
+        for (let i = 0; i < points.length; i++) {
+          if (i === 0) {
+            prex = points[0].x;
+            prey = points[0].y;
+            points[0][direction] += speed; // 控制方向
+          } else {
+            /* 连线 */
+            let { x, y } = points[i]; // 先拿出来
+            points[i].x = prex;
+            points[i].y = prey;
+            prex = x; // 把新的随机点给了他
+            prey = y;
+          }
+          console.log(points, 159);
+          gl.vertexAttrib3f(aPosition, points[i].x, points[i].y, 0.0); // 控制位置信息
+          gl.uniform2f(uColor, points[i].x, points[i].y); // 这边是rgba的颜色值
+          gl.drawArrays(gl.POINTS, 0, 1);
+        }
+      };
+
+      const restart = () => {
+        clearInterval(timer);
+        points = [{ x: 0, y: 0 }];
+      };
+    </script>
+  </body>
+</html>

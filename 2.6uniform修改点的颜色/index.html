@@ -1,0 +1,91 @@
+<!--
+ * @Author: hansen
+ * @Date: 2023-04-06 16:25:54
+ * @LastEditors: hansen
+ * @LastEditTime: 2023-04-06 20:01:35
+ * @FilePath: \user-endd:\project\webgl-three-learn\2.6uniform修改点的颜色\index.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../lib/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #canvas {
+            margin: 50px auto 0;
+            display: block;
+            background: rgb(221, 221, 214);
+        }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"> 此浏览器不支持canvas </canvas>
+
+    <script>
+        const ctx = document.getElementById('canvas');
+        const gl = ctx.getContext('webgl');
+
+        /* 创建着色器 */
+        const VERTEX_SHADER_SOURCE = `
+            // 只传递顶点数据
+            attribute vec4 aPosition;
+            void main() {
+                gl_Position = aPosition;
+                gl_PointSize = 10.0;
+            }
+        `;// 顶点着色器
+
+        const FRAGMENT_SHADER_SOURCE = `
+            precision mediump float;
+            uniform vec2 uColor;
+            void main() {
+                gl_FragColor = vec4(uColor.r, uColor.g, 0.0,1.0); // vec4
+            }
+        `;// 片元着色器
+
+        const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+        const aPosition = gl.getAttribLocation(program, 'aPosition'); // 位置信息
+
+        const uColor = gl.getUniformLocation(program, 'uColor'); // 颜色信息
+        
+        const points = [];
+        ctx.onclick = function(ev) {
+            // 坐标
+            const x = ev.clientX
+            const y = ev.clientY
+
+            const domPosition = ev.target.getBoundingClientRect();
+
+            const domX = x - domPosition.left
+            const domY = y - domPosition.top;
+
+            const halfWidth = ctx.offsetWidth / 2
+            const halfHeight = ctx.offsetHeight / 2
+
+            const clickX = (domX - halfWidth) / halfWidth
+            const clickY = (halfHeight - domY) / halfHeight
+
+            points.push({
+                clickX, clickY
+            })
+
+            for (let i = 0; i < points.length; i++) {
+                gl.vertexAttrib2f(aPosition, points[i].clickX, points[i].clickY); // 设置位置信息
+                gl.uniform2f(uColor, points[i].clickX, points[i].clickY); // 这边是rgba的颜色值
+                gl.drawArrays(gl.POINTS, 0, 1);
+            }
+        }
+
+        
+
+    </script>
+  </body>
+</html>
