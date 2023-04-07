@@ -2,7 +2,7 @@
  * @Author: hansen
  * @Date: 2023-04-06 16:25:54
  * @LastEditors: hansen
- * @LastEditTime: 2023-04-06 17:20:18
+ * @LastEditTime: 2023-04-07 19:12:45
  * @FilePath: \user-endd:\project\webgl-three-learn\2.5通过鼠标控制绘制\index.html
 -->
 <!DOCTYPE html>
@@ -82,8 +82,6 @@
             const domPosition = ev.target.getBoundingClientRect();
             const domX = x - domPosition.left;
             const domY = y - domPosition.top;
-
-            console.log(domX, domY, 68);
 
             const halfWidth = ctx.offsetWidth / 2
             const halfHeight = ctx.offsetHeight / 2
