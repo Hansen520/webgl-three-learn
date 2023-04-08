@@ -123,7 +123,16 @@
         */
       gl.enableVertexAttribArray(aPosition);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      /*
+        gl.POINTS 点 ⼀系列点
+        gl.LINES 线段 ⼀系列单独的线段，如果顶点是奇数，最后⼀个会被忽略
+        gl.LINE_LOOP 闭合线 ⼀系列连接的线段，结束时，会闭合终点和起点
+        gl.LINE_STRIP 线条 ⼀系列连接的线段，不会闭合终点和起点
+        gl.TRIANGLES 三角形 ⼀系列单独的三角形
+        gl.TRIANGLE_STRIP 三角带 ⼀系列条带状的三角形
+        gl.TRIANGLE_FAN 三角形 飘带状三角形
+      */
+      gl.drawArrays(gl.LINES, 0, 3);
     </script>
   </body>
 </html>
