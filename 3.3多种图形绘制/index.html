@@ -36,10 +36,9 @@
       const VERTEX_SHADER_SOURCE = `
             // 只传递顶点数据
             attribute vec4 aPosition;
-            attribute float aPointSize;
             void main() {
                 gl_Position = aPosition;
-                gl_PointSize = aPointSize;
+                gl_PointSize = 10.0;
             }
         `; // 顶点着色器
 
@@ -57,8 +56,6 @@
 
       // 链接aPosition
       const aPosition = gl.getAttribLocation(program, 'aPosition');
-      const aPointSize = gl.getAttribLocation(program, 'aPointSize');
-
       /*
             类型化数组
             Int8Array: 8位整型
@@ -71,7 +68,7 @@
             Float64Array:双精度64位浮点型
         */
       const points = new Float32Array([
-        -0.5, -0.5, 10.0, 0.5, -0.5, 20.0, 0.0, 0.5, 30.0, 0.3, 0.8, 40.0,
+        -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5,
       ]);
 
       /* 创建缓冲区对象 */
@@ -101,10 +98,6 @@
       gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
 
       /*
-        设置字节数
-      */
-      const BYTES = points.BYTES_PER_ELEMENT;
-      /*
             gl,vertexAttribPointer(location, size, type, normalized, stride, offset)
             location: attribute 变量的存储位置
             size: 指定每个顶点所使⽤数据的个数
@@ -122,7 +115,7 @@
 
         */
       // 这个设置位置的
-      gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 3, 0);
+      gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
       /*
             gl.enableVertexAttribArray(location)
             location: attribute 变量的存储地址
@@ -130,18 +123,7 @@
         */
       gl.enableVertexAttribArray(aPosition);
 
-      // 这个是设置大小的
-      gl.vertexAttribPointer(
-        aPointSize,
-        1,
-        gl.FLOAT,
-        false,
-        BYTES * 3,
-        BYTES * 2
-      );
-
-      gl.enableVertexAttribArray(aPointSize);
-      gl.drawArrays(gl.POINTS, 0, 4);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     </script>
   </body>
 </html>
