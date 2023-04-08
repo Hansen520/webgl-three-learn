@@ -1,0 +1,144 @@
+<!--
+ * @Author: hansen
+ * @Date: 2023-04-06 16:25:54
+ * @LastEditors: hansen
+ * @LastEditTime: 2023-04-07 19:33:27
+ * @FilePath: \user-endd:\project\webgl-three-learn\3.1使用缓冲区对象-绘制多个点\index.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../lib/index.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        margin: 50px auto 0;
+        display: block;
+        background: rgb(148, 148, 136);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"> 此浏览器不支持canvas </canvas>
+
+    <script>
+      const ctx = document.getElementById('canvas');
+      const gl = ctx.getContext('webgl');
+
+      /* 创建着色器 */
+      const VERTEX_SHADER_SOURCE = `
+            // 只传递顶点数据
+            attribute vec4 aPosition;
+            attribute float aPointSize;
+            void main() {
+                gl_Position = aPosition;
+                gl_PointSize = aPointSize;
+            }
+        `; // 顶点着色器
+
+      const FRAGMENT_SHADER_SOURCE = `
+            void main() {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+        `; // 片元着色器
+
+      const program = initShader(
+        gl,
+        VERTEX_SHADER_SOURCE,
+        FRAGMENT_SHADER_SOURCE
+      );
+
+      // 链接aPosition
+      const aPosition = gl.getAttribLocation(program, 'aPosition');
+      const aPointSize = gl.getAttribLocation(program, 'aPointSize');
+
+      /*
+            类型化数组
+            Int8Array: 8位整型
+            UInt8Array: 8位无符号整型
+            Int16Array: 16位整型
+            UInt16Array:16位无符号整型
+            Int32Array:32位整型
+            UInt32Array:32位无符号整型
+            Float32Array:单精度32位浮点型
+            Float64Array:双精度64位浮点型
+        */
+      const points = new Float32Array([
+        -0.5, -0.5, 10.0, 0.5, -0.5, 20.0, 0.0, 0.5, 30.0, 0.3, 0.8, 40.0,
+      ]);
+
+      /* 创建缓冲区对象 */
+      const buffer = gl.createBuffer();
+
+      /*
+            gl.bindBuffer(target, buffer)
+            buffer: 已经创建好的缓冲区对象
+            target: {
+                gl.ARRAY_BUFFER: 表示缓冲区存储的是顶点的数据
+                gl.ELEMENT_ARRAY_BUFFER: 表示缓冲区存储的是顶点的索引值
+            }
+
+        */
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+      /*
+            gl.bufferData(target, data, type)
+            target: 类型同 gl.bindBuffer 中的 target
+            data: 写⼊缓冲区的顶点数据，如程序中的 points
+            type: {
+                gl.STATIC_DRAW: 写⼊⼀次，多次绘制
+                gl.STREAM_DRAW: 写⼊⼀次，绘制若干次
+                gl.DYNAMIC_DRAW: 写⼊多次，绘制多次
+            }
+        */
+      gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+      const BYTES = points.BYTES_PER_ELEMENT;
+      /*
+            gl,vertexAttribPointer(location, size, type, normalized, stride, offset)
+            location: attribute 变量的存储位置
+            size: 指定每个顶点所使⽤数据的个数
+            type: {
+                gl.FLOAT：浮点型
+                gl.UNSIGNED_BYTE：⽆符号字节
+                gl.SHORT：短整型
+                gl.UNSIGNED_SHORT：无符号短整型
+                gl.INT：整型
+                gl.UNSIGNED_INT：无符号整型
+            }
+            normalized: 表示是否将数据归⼀化到 [0, 1] [-1, 1] 这个区间 这边写false因为已经规划好了打[-1，1]区间了
+            stride：两个相邻顶点之间的字节数
+            offset：数据偏移量
+
+        */
+      // 这个设置位置的
+      gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 3, 0);
+      /*
+            gl.enableVertexAttribArray(location)
+            location: attribute 变量的存储地址
+            gl.disableVertexAttribArray(aPosition); 使⽤此⽅法禁⽤
+        */
+      gl.enableVertexAttribArray(aPosition);
+
+      // 这个是设置大小的
+      gl.vertexAttribPointer(
+        aPointSize,
+        1,
+        gl.FLOAT,
+        false,
+        BYTES * 3,
+        BYTES * 2
+      );
+
+      gl.enableVertexAttribArray(aPointSize);
+      gl.drawArrays(gl.POINTS, 0, 4);
+    </script>
+  </body>
+</html>
