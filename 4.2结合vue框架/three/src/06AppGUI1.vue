@@ -6,7 +6,8 @@
 import { onMounted } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import dat from 'dat.gui';
+// import dat from 'dat.gui';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 // 创建控制对象
 const controlData = {
@@ -16,7 +17,7 @@ const controlData = {
 }
 
 // 创建gui实例
-const gui = new dat.GUI() as any;
+const gui = new GUI() as any;
 const f = gui.addFolder('配置');
 
 f.add(controlData, "rotationSpeed").min(0.01).max(0.1).step(0.01)

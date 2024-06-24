@@ -6,7 +6,8 @@
 import { onMounted } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import dat from 'dat.gui';
+// import dat from 'dat.gui';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 // 创建控制对象
 const controlData = {
@@ -16,24 +17,43 @@ const controlData = {
 }
 
 // 创建gui实例
-const gui = new dat.GUI() as any;
-const f = gui.addFolder('配置');
+const gui = new GUI() as any;
+gui.addFolder('配置');
 
-f.add(controlData, "rotationSpeed").min(0.01).max(0.1).step(0.01)
+
+let eventObj = {
+  FullScreen: function () {
+
+    // 全屏
+    document.body.requestFullscreen()
+    console.log('全屏');
+  },
+  exitFullscreen: function () {
+    document.exitFullscreen()
+    console.log('退出全屏');
+  }
+
+}
+
+// 添加按钮
+gui.add(eventObj, 'FullScreen');
+gui.add(eventObj, 'exitFullscreen');
+
+gui.add(controlData, "rotationSpeed").min(0.01).max(0.1).step(0.01)
+
+
 // 颜色选择器
-f.addColor(controlData, "color").name("全部实体的颜色").onChange((value) => {
+gui.addColor(controlData, "color").name("全部实体的颜色").onChange((value) => {
   console.log(value);
   cube.material.color.set(value)
 })
 // checkbox
-f.add(controlData, "wireframe")
+gui.add(controlData, "wireframe")
 
-const person = {age: 45};
-f.add(person, 'age', 0, 100)
 
-f.domElement.id = "gui"
+gui.domElement.id = "gui"
 
-f.open()
+gui.open()
 
 // 创建场景
 const scene = new THREE.Scene();
@@ -66,7 +86,10 @@ const sphere = new THREE.SphereGeometry(0.5, 32, 32);
 const cube = new THREE.Mesh(geometry, material) as any;
 cube.position.set(0, 3, 0);
 scene.add(cube);
-
+let folder = gui.addFolder('立方体位置')
+folder.add(cube.position, 'x').name('立方x').min(0).max(5).step(0.01)
+folder.add(cube.position, 'y').name('立方y').min(0).max(5).step(0.01)
+folder.add(cube.position, 'z').name('立方z').min(0).max(5).step(0.01)
 // 网格 two
 const cube1 = new THREE.Mesh(sphere, material) as any;
 cube1.position.set(3, 3, -3);
@@ -84,7 +107,7 @@ onMounted(() => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // 将gui添加到页面
-  document.getElementById('container')!.appendChild(f.domElement);
+  document.getElementById('container')!.appendChild(gui.domElement);
   // 将渲染器添加到页面
   document.getElementById('container')!.appendChild(renderer.domElement);
 
@@ -140,6 +163,8 @@ onMounted(() => {
 });
 
 
+
+
 </script>
 
 <template>
@@ -148,7 +173,7 @@ onMounted(() => {
 </template>
 
 <style>
-  #gui {
+#gui {
   position: absolute;
   right: 0;
   width: 300px;
