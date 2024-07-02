@@ -15,13 +15,13 @@ let scene;
 const IMAGE_SKY = new URL("../assets/images/sky.png", import.meta.url).href;
 console.log(IMAGE_SKY, 15);
 // 宽度
-let width;
+let width = 0;
 // 高度
-let height;
+let height = 0;
 // 深度
-let depth = 1400;
+let depth = 1380;
 // 相机z轴上的位置
-let zAxisNumber;
+let zAxisNumber = 0;
 // 相机
 let camera;
 // 渲染器
@@ -42,17 +42,26 @@ let zProgress_second;
 let particles_first = [];
 // 声明点2的数据
 let particles_second = [];
+// 声明星云对象1
+let cloud_first;
+// 声明星云对象2
+let cloud_second;
+// 创建星云运动的渲染函数1
+let renderCloud_first;
+// 创建星云运动的渲染函数2
+let renderCloud_second;
 
 const IMAGE_EARTH = new URL("../assets/images/earth_bg.png", import.meta.url).href;
 const IMAGE_STAR1 = new URL("../assets/images/starflake1.png", import.meta.url).href;
 const IMAGE_STAR2 = new URL("../assets/images/starflake2.png", import.meta.url).href;
+const IMAGE_CLOUD = new URL("../assets/images/cloud.png", import.meta.url).href;
 onMounted(() => {
-
-  // 初始化场景
   container = document.getElementById("login-three-container");
   width = container.clientWidth;
   height = container.clientHeight;
-  console.log(container);
+  console.log(1, width, height);
+  // 初始化场景
+
   initScene();
   initSceneBg();
   initCamera();
@@ -64,6 +73,22 @@ onMounted(() => {
   zProgress_second = particles_init_position * 2;
   particles_first = initSceneStar(particles_init_position);
   particles_second = initSceneStar(zProgress_second);
+  cloud_first = initCloud(400, 200);
+  cloud_second = initCloud(200, 100);
+  renderCloud_first = initCloudMove(
+    cloud_first,
+    [
+      new THREE.Vector3(-width / 10, 0, -depth / 2),
+      new THREE.Vector3(-width / 4, height / 8, 0),
+      new THREE.Vector3(-width / 4, 0, zAxisNumber),
+    ],
+    0.0002
+  );
+  renderCloud_second = initCloudMove(
+    cloud_second,
+    [new THREE.Vector3(width / 8, height / 8, -depth / 2), new THREE.Vector3(width / 8, height / 8, zAxisNumber)],
+    0.0008
+  );
   initRenderer();
   initOrbitControls();
   animate();
@@ -94,20 +119,20 @@ const initSceneBg = () => {
 // 初始化相机
 const initCamera = () => {
   // 视野夹角
-  const fov = 15;
+  const fov = 12;
   // 计算相机距离物体的距离
   const distance = width / 2 / Math.tan(Math.PI / 12);
   zAxisNumber = Math.floor(distance - 1400 / 2);
   camera = new THREE.PerspectiveCamera(fov, width / height, 1, 30000);
   // 设置相机所在的位置
-  camera.position.set(0, 0, zAxisNumber);
+  camera.position.set(1400, 980, zAxisNumber);
   // 设置相机的方向
-  camera.lookAt(0, 0, 0);
+  camera.lookAt(-200, -1000, 0);
 };
 
 // 初始化球体
 const initSphereModal = () => {
-  const geometry = new THREE.SphereGeometry(50, 64, 32);
+  const geometry = new THREE.SphereGeometry(50, 64, 80);
   const material = new THREE.MeshBasicMaterial();
   material.map = new THREE.TextureLoader().load(IMAGE_EARTH);
   sphere = new THREE.Mesh(geometry, material); // 网格
@@ -192,8 +217,8 @@ const renderStarMove = () => {
     material[i].color.setHSL(color[0], color[1], parseFloat(h.toFixed(2)));
   }
   // 星星的移动
-  zProgress += 3.5;
-  zProgress_second += 3.5;
+  zProgress += 3.8;
+  zProgress_second += 3.8;
   if (zProgress >= zAxisNumber + depth / 2) {
     zProgress = particles_init_position;
   } else {
@@ -208,6 +233,40 @@ const renderStarMove = () => {
       item.position.setZ(zProgress_second);
     });
   }
+};
+// 渲染星云的效果
+const initCloud = (width, height) => {
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const textureLoader = new THREE.TextureLoader();
+  const cloudTexture = textureLoader.load(IMAGE_CLOUD);
+  const cloudMaterial = new THREE.MeshBasicMaterial({
+    map: cloudTexture,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthTest: false,
+  });
+  const cloud = new THREE.Mesh(geometry, cloudMaterial);
+  scene.add(cloud);
+  return cloud;
+};
+
+// 创建星云的运动函数
+const initCloudMove = (cloud, route, speed) => {
+  let cloudProgress = 0;
+  // 创建三维曲线
+  const curve = new THREE.CatmullRomCurve3(route);
+  return () => {
+    if (cloudProgress <= 1) {
+      cloudProgress += speed;
+      // 获取当前位置
+      const point = curve.getPoint(cloudProgress);
+      if (point && point.x) {
+        cloud.position.set(point.x, point.y, point.z);
+      }
+    } else {
+      cloudProgress = 0;
+    }
+  };
 };
 
 // 渲染器
@@ -234,6 +293,8 @@ const animate = () => {
   requestAnimationFrame(animate);
   renderSphereRotate();
   renderStarMove();
+  renderCloud_first();
+  renderCloud_second();
   renderer.render(scene, camera);
 };
 </script>
