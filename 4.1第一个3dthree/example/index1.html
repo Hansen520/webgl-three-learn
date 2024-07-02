@@ -1,0 +1,75 @@
+<!--
+ * @Date: 2024-06-07 15:28:48
+ * @Description: description
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>第一个3D效果</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three/build/three.module.js";
+      // 创建场景
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xdddddd);
+
+      // 创建相机
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      // 创建渲染器
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // 创建环境贴图
+      const cubeTextureLoader = new THREE.CubeTextureLoader();
+      const environmentMap = cubeTextureLoader.load([
+        "image.png",
+        "path/to/left.png",
+        "path/to/top.png",
+        "path/to/bottom.png",
+        "path/to/front.png",
+        "path/to/back.png",
+      ]);
+
+      // 创建水箱材质
+      const waterMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x1f4e79,
+        transparent: true,
+        opacity: 0.33,
+        envMap: environmentMap,
+        refractionRatio: 1.333,
+        side: THREE.DoubleSide,
+      });
+
+      // 创建水箱几何体
+      const waterGeometry = new THREE.BoxGeometry(2, 2, 2);
+      const water = new THREE.Mesh(waterGeometry, waterMaterial);
+      scene.add(water);
+
+      // 创建灯光
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(0, 10, 5);
+      scene.add(light);
+
+
+
+      // 渲染循环
+      function animate() {
+        requestAnimationFrame(animate);
+        water.rotation.y += 0.005;
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>
