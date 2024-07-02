@@ -5,7 +5,7 @@
 import { onMounted } from "vue";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import _ from 'lodash';
+import _ from "lodash";
 
 // 容器
 let container;
@@ -29,16 +29,26 @@ let renderer;
 // 球体的网格
 let sphere;
 // 点的初始参数
-let parameters
+let parameters;
 // 点的材质
 let material = [];
 // 点的初始位置
 let particles_init_position;
+// 声明点1在Z轴上的移动的位置
+let zProgress;
+// 声明点2在Z轴上的移动的位置
+let zProgress_second;
+// 声明点1的数据
+let particles_first = [];
+// 声明点2的数据
+let particles_second = [];
 
-const IMAGE_EARTH = new URL('../assets/images/earth_bg.png', import.meta.url).href;
-const IMAGE_STAR1 = new URL('../assets/images/starflake1.png', import.meta.url).href;
-const IMAGE_STAR2 = new URL('../assets/images/starflake2.png', import.meta.url).href;
+const IMAGE_EARTH = new URL("../assets/images/earth_bg.png", import.meta.url).href;
+const IMAGE_STAR1 = new URL("../assets/images/starflake1.png", import.meta.url).href;
+const IMAGE_STAR2 = new URL("../assets/images/starflake2.png", import.meta.url).href;
 onMounted(() => {
+
+  // 初始化场景
   container = document.getElementById("login-three-container");
   width = container.clientWidth;
   height = container.clientHeight;
@@ -50,7 +60,10 @@ onMounted(() => {
   initLight();
   // 定义初始位置
   particles_init_position = -zAxisNumber - depth / 2;
-  initSceneStar(particles_init_position);
+  zProgress = particles_init_position;
+  zProgress_second = particles_init_position * 2;
+  particles_first = initSceneStar(particles_init_position);
+  particles_second = initSceneStar(zProgress_second);
   initRenderer();
   initOrbitControls();
   animate();
@@ -94,79 +107,108 @@ const initCamera = () => {
 
 // 初始化球体
 const initSphereModal = () => {
-    const geometry = new THREE.SphereGeometry(50, 64, 32);
-    const material = new THREE.MeshBasicMaterial();
-    material.map = new THREE.TextureLoader().load(IMAGE_EARTH);
-    sphere = new THREE.Mesh(geometry, material); // 网格
-    sphere.position.set(-400, 200, -200);
-    // 添加到场景中
-    scene.add(sphere);
-}
+  const geometry = new THREE.SphereGeometry(50, 64, 32);
+  const material = new THREE.MeshBasicMaterial();
+  material.map = new THREE.TextureLoader().load(IMAGE_EARTH);
+  sphere = new THREE.Mesh(geometry, material); // 网格
+  sphere.position.set(-400, 200, -200);
+  // 添加到场景中
+  scene.add(sphere);
+};
 // 光源
 const initLight = () => {
-    // 环境光
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
-    // 点光源
-    const pointLight = new THREE.PointLight(0x0655fd, 5, 0);
-    pointLight.position.set(0, 100, -200);
-    scene.add(pointLight);
-}
+  // 环境光
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(ambientLight);
+  // 点光源
+  const pointLight = new THREE.PointLight(0x0655fd, 5, 0);
+  pointLight.position.set(0, 100, -200);
+  scene.add(pointLight);
+};
 // 星球的自传
 const renderSphereRotate = () => {
-    sphere.rotateY(0.001);
-}
+  sphere.rotateY(0.009);
+};
 
 // 初始场景星星的效果
 const initSceneStar = (initZPosition) => {
-    const geometry = new THREE.BufferGeometry();
-    // 设置星星的位置
-    const vertices = [];
-    // 创建纹理
-    const textureLoader = new THREE.TextureLoader();
-    const sprite1 = textureLoader.load(IMAGE_STAR1);
-    const sprite2 = textureLoader.load(IMAGE_STAR2);
-    // 星星的数据
-    const pointsGeometry = [];
-    // 声明点的参数
-    parameters = [
-        [[0.6, 100, 0.75], sprite1, 50],
-        [[0, 0, 1], sprite2, 20]
-    ]
-    // 创建星星
-    for (let i = 0; i < 1510; i++) {
-        const x = THREE.MathUtils.randFloatSpread(width);
-        const y = _.random(0, height / 2);
-        const z = _.random(-depth / 2, zAxisNumber);
-        vertices.push(x, y, z);
-    }
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    // 创建两种不同的材质
-    for (let i = 0; i < parameters.length; i++) {
-        // 颜色
-        const color = parameters[i][0];
-        // 纹理
-        const sprite = parameters[i][1];
-        // 点的大小
-        const size = parameters[i][2];
-        material[i] = new THREE.PointsMaterial({
-            size,
-            map: sprite,
-        })
-        // 设置颜色
-        material[i].color.setHSL(color[0], color[1], color[2]);
-        // 创建物体
-        const particle = new THREE.Points(geometry, material[i]);
-        particle.rotation.x = Math.random() * 0.2 - 0.15;
-        particle.rotation.y = Math.random() * 0.2 - 0.15;
-        particle.rotation.z = Math.random() * 0.2 - 0.15;
-        particle.position.setZ(initZPosition);
-        pointsGeometry.push(particle);
-        scene.add(particle);
-        
-    }
-    return pointsGeometry;
-}
+  const geometry = new THREE.BufferGeometry();
+  // 设置星星的位置
+  const vertices = [];
+  // 创建纹理
+  const textureLoader = new THREE.TextureLoader();
+  const sprite1 = textureLoader.load(IMAGE_STAR1);
+  const sprite2 = textureLoader.load(IMAGE_STAR2);
+  // 星星的数据
+  const pointsGeometry = [];
+  // 声明点的参数
+  parameters = [
+    [[0.6, 100, 0.75], sprite1, 50],
+    [[0, 0, 1.25], sprite2, 20],
+  ];
+  // 创建星星
+  for (let i = 0; i < 3000; i++) {
+    const x = THREE.MathUtils.randFloatSpread(width);
+    const y = _.random(0, height / 2);
+    const z = _.random(-depth / 2, zAxisNumber);
+    vertices.push(x, y, z);
+  }
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  // 创建两种不同的材质
+  for (let i = 0; i < parameters.length; i++) {
+    // 颜色
+    const color = parameters[i][0];
+    // 纹理
+    const sprite = parameters[i][1];
+    // 点的大小
+    const size = parameters[i][2];
+    material[i] = new THREE.PointsMaterial({
+      size,
+      map: sprite,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthTest: true,
+    });
+    // 设置颜色
+    material[i].color.setHSL(color[0], color[1], color[2]);
+    // 创建物体
+    const particle = new THREE.Points(geometry, material[i]);
+    particle.rotation.x = Math.random() * 0.2 - 0.15;
+    particle.rotation.y = Math.random() * 0.2 - 0.15;
+    particle.rotation.z = Math.random() * 0.2 - 0.15;
+    particle.position.setZ(initZPosition);
+    pointsGeometry.push(particle);
+    scene.add(particle);
+  }
+  return pointsGeometry;
+};
+// 渲染星星的运动
+const renderStarMove = () => {
+  // 星星的颜色交替变化
+  const time = Date.now() * 0.00005;
+  for (let i = 0; i < parameters.length; i++) {
+    const color = parameters[i][0];
+    const h = ((360 * (color[0] + time)) % 360) / 360;
+    material[i].color.setHSL(color[0], color[1], parseFloat(h.toFixed(2)));
+  }
+  // 星星的移动
+  zProgress += 3.5;
+  zProgress_second += 3.5;
+  if (zProgress >= zAxisNumber + depth / 2) {
+    zProgress = particles_init_position;
+  } else {
+    particles_first.forEach((item) => {
+      item.position.setZ(zProgress);
+    });
+  }
+  if (zProgress_second >= zAxisNumber + depth / 2) {
+    zProgress_second = particles_init_position;
+  } else {
+    particles_second.forEach((item) => {
+      item.position.setZ(zProgress_second);
+    });
+  }
+};
 
 // 渲染器
 const initRenderer = () => {
@@ -191,6 +233,7 @@ const initOrbitControls = () => {
 const animate = () => {
   requestAnimationFrame(animate);
   renderSphereRotate();
+  renderStarMove();
   renderer.render(scene, camera);
 };
 </script>
