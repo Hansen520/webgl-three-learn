@@ -5,6 +5,7 @@
 import { onMounted } from "vue";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import _ from 'lodash';
 
 // 容器
 let container;
@@ -27,7 +28,16 @@ let camera;
 let renderer;
 // 球体的网格
 let sphere;
+// 点的初始参数
+let parameters
+// 点的材质
+let material = [];
+// 点的初始位置
+let particles_init_position;
+
 const IMAGE_EARTH = new URL('../assets/images/earth_bg.png', import.meta.url).href;
+const IMAGE_STAR1 = new URL('../assets/images/starflake1.png', import.meta.url).href;
+const IMAGE_STAR2 = new URL('../assets/images/starflake2.png', import.meta.url).href;
 onMounted(() => {
   container = document.getElementById("login-three-container");
   width = container.clientWidth;
@@ -38,6 +48,9 @@ onMounted(() => {
   initCamera();
   initSphereModal();
   initLight();
+  // 定义初始位置
+  particles_init_position = -zAxisNumber - depth / 2;
+  initSceneStar(particles_init_position);
   initRenderer();
   initOrbitControls();
   animate();
@@ -102,6 +115,57 @@ const initLight = () => {
 // 星球的自传
 const renderSphereRotate = () => {
     sphere.rotateY(0.001);
+}
+
+// 初始场景星星的效果
+const initSceneStar = (initZPosition) => {
+    const geometry = new THREE.BufferGeometry();
+    // 设置星星的位置
+    const vertices = [];
+    // 创建纹理
+    const textureLoader = new THREE.TextureLoader();
+    const sprite1 = textureLoader.load(IMAGE_STAR1);
+    const sprite2 = textureLoader.load(IMAGE_STAR2);
+    // 星星的数据
+    const pointsGeometry = [];
+    // 声明点的参数
+    parameters = [
+        [[0.6, 100, 0.75], sprite1, 50],
+        [[0, 0, 1], sprite2, 20]
+    ]
+    // 创建星星
+    for (let i = 0; i < 1510; i++) {
+        const x = THREE.MathUtils.randFloatSpread(width);
+        const y = _.random(0, height / 2);
+        const z = _.random(-depth / 2, zAxisNumber);
+        vertices.push(x, y, z);
+    }
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    // 创建两种不同的材质
+    for (let i = 0; i < parameters.length; i++) {
+        // 颜色
+        const color = parameters[i][0];
+        // 纹理
+        const sprite = parameters[i][1];
+        // 点的大小
+        const size = parameters[i][2];
+        material[i] = new THREE.PointsMaterial({
+            size,
+            map: sprite,
+        })
+        // 设置颜色
+        material[i].color.setHSL(color[0], color[1], color[2]);
+        // 创建物体
+        const particle = new THREE.Points(geometry, material[i]);
+        particle.rotation.x = Math.random() * 0.2 - 0.15;
+        particle.rotation.y = Math.random() * 0.2 - 0.15;
+        particle.rotation.z = Math.random() * 0.2 - 0.15;
+        particle.position.setZ(initZPosition);
+        pointsGeometry.push(particle);
+        scene.add(particle);
+        
+    }
+    return pointsGeometry;
 }
 
 // 渲染器
