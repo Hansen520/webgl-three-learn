@@ -125,9 +125,9 @@ const initCamera = () => {
   zAxisNumber = Math.floor(distance - 1400 / 2);
   camera = new THREE.PerspectiveCamera(fov, width / height, 1, 30000);
   // 设置相机所在的位置
-  camera.position.set(1400, 980, zAxisNumber);
+  camera.position.set(1000, -8, -zAxisNumber);
   // 设置相机的方向
-  camera.lookAt(-200, -1000, 0);
+  camera.lookAt(0, 0, 0);
 };
 
 // 初始化球体
@@ -146,7 +146,9 @@ const initLight = () => {
   const ambientLight = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambientLight);
   // 点光源
-  const pointLight = new THREE.PointLight(0x0655fd, 5, 0);
+  const pointLight = new THREE.PointLight(0x404040, 1);
+  pointLight.power = 5000;
+  pointLight.castShadow = true;
   pointLight.position.set(0, 100, -200);
   scene.add(pointLight);
 };
@@ -227,7 +229,7 @@ const renderStarMove = () => {
     });
   }
   if (zProgress_second >= zAxisNumber + depth / 2) {
-    zProgress_second = particles_init_position;
+    zProgress_second = particles_init_position * 2;
   } else {
     particles_second.forEach((item) => {
       item.position.setZ(zProgress_second);
