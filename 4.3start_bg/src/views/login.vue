@@ -59,9 +59,7 @@ onMounted(() => {
   container = document.getElementById("login-three-container");
   width = container.clientWidth;
   height = container.clientHeight;
-  console.log(1, width, height);
   // 初始化场景
-
   initScene();
   initSceneBg();
   initCamera();
@@ -125,7 +123,7 @@ const initCamera = () => {
   zAxisNumber = Math.floor(distance - 1400 / 2);
   camera = new THREE.PerspectiveCamera(fov, width / height, 1, 30000);
   // 设置相机所在的位置
-  camera.position.set(1000, -8, -zAxisNumber);
+  camera.position.set(-600, 550, zAxisNumber);
   // 设置相机的方向
   camera.lookAt(0, 0, 0);
 };
@@ -136,20 +134,19 @@ const initSphereModal = () => {
   const material = new THREE.MeshBasicMaterial();
   material.map = new THREE.TextureLoader().load(IMAGE_EARTH);
   sphere = new THREE.Mesh(geometry, material); // 网格
-  sphere.position.set(-400, 200, -200);
+  sphere.position.set(-400, 200, 300);
   // 添加到场景中
   scene.add(sphere);
 };
 // 光源
 const initLight = () => {
   // 环境光
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  const ambientLight = new THREE.AmbientLight(0xff0000, 1);
   scene.add(ambientLight);
   // 点光源
-  const pointLight = new THREE.PointLight(0x404040, 1);
-  pointLight.power = 5000;
-  pointLight.castShadow = true;
-  pointLight.position.set(0, 100, -200);
+  const pointLight = new THREE.PointLight(0x404040, 1, 1000);
+  pointLight.power = 70000;
+  pointLight.position.set(-600, 550, -200);
   scene.add(pointLight);
 };
 // 星球的自传
@@ -174,7 +171,7 @@ const initSceneStar = (initZPosition) => {
     [[0, 0, 1.25], sprite2, 20],
   ];
   // 创建星星
-  for (let i = 0; i < 3000; i++) {
+  for (let i = 0; i < 5000; i++) {
     const x = THREE.MathUtils.randFloatSpread(width);
     const y = _.random(0, height / 2);
     const z = _.random(-depth / 2, zAxisNumber);
@@ -219,8 +216,8 @@ const renderStarMove = () => {
     material[i].color.setHSL(color[0], color[1], parseFloat(h.toFixed(2)));
   }
   // 星星的移动
-  zProgress += 3.8;
-  zProgress_second += 3.8;
+  zProgress += 2.8;
+  zProgress_second += 2.8;
   if (zProgress >= zAxisNumber + depth / 2) {
     zProgress = particles_init_position;
   } else {
