@@ -1,3 +1,7 @@
+<!--
+ * @Date: 2024-07-08 16:43:37
+ * @Description: description
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +17,7 @@
     canvas{
       margin: 50px auto 0;
       display: block;
-      background: yellow;
+      background: rgb(211, 211, 84);
     }
   </style>
 </head>
@@ -50,12 +54,13 @@
   const aPosition = gl.getAttribLocation(program, 'aPosition');
   const mat = gl.getUniformLocation(program, 'mat');
 
+  // 缩放矩阵
   function getScaleMatrix(x = 1, y = 1, z = 1) {
     return new Float32Array([
-        x,0.0,0.0,0.0,
-        0.0,y,0.0,0.0,
-        0.0,0.0,z,0.0,
-        x, y, z, 1
+        x,  0.0,0.0,0.0,
+        0.0,y,  0.0,0.0,
+        0.0,0.0,z,  0.0,
+        0.0, 0.0, 0.0,   1
     ])
   }
 
@@ -82,7 +87,7 @@
       x = 0.1;
     }
 
-    const matrix = getScaleMatrix(x);
+    const matrix = getScaleMatrix(x, x);
     // gl.vertexAttrib1f(aTranslate, x);
     gl.uniformMatrix4fv(mat, false, matrix);
     gl.drawArrays(gl.TRIANGLES, 0, 3);

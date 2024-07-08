@@ -13,7 +13,7 @@
     canvas{
       margin: 50px auto 0;
       display: block;
-      background: yellow;
+      background: rgb(211, 211, 84);
     }
   </style>
 </head>
@@ -32,10 +32,12 @@
   // 创建着色器源码
   const VERTEX_SHADER_SOURCE = `
     attribute vec4 aPosition;
-    uniform mat4 mat;
+    attribute float deg;
     void main() {
-      gl_Position = mat * aPosition;
-      gl_PointSize = 10.0;
+      gl_Position.x = aPosition.x * cos(deg) - aPosition.y * sin(deg);
+      gl_Position.y = aPosition.x * sin(deg) + aPosition.y * cos(deg);
+      gl_Position.z = aPosition.z;
+      gl_Position.w = aPosition.w;
     }
   `; // 顶点着色器
 
@@ -48,15 +50,15 @@
   const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
 
   const aPosition = gl.getAttribLocation(program, 'aPosition');
-  const mat = gl.getUniformLocation(program, 'mat');
+  const deg = gl.getAttribLocation(program, 'deg');
 
-  // 平移矩阵
-  function getTranslateMatrix(x = 0, y = 0, z = 0) {
+  // 绕z轴旋转
+  function getRotateMatrix(deg) {
     return new Float32Array([
-        1.0,0.0,0.0,0.0,
-        0.0,1.0,0.0,0.0,
-        0.0,0.0,1.0,0.0,
-        x, y, z, 1.0
+        Math.cos(deg),  Math.sin(deg), 0.0,    0.0,
+        -Math.sin(deg), Math.cos(deg), 0.0,   0.0,
+        0.0,            0.0,           1.0,   0.0,
+        0.0,               0.0,             0.0,      1
     ])
   }
 
@@ -76,19 +78,13 @@
 
   gl.enableVertexAttribArray(aPosition)
 
-  let x = -1;
+  let x = 1;
   function animation() {
-    x += 0.01;
-    if (x > 1) {
-      x = -1;
-    }
-
-    const matrix = getTranslateMatrix(x, x);
-    // gl.vertexAttrib1f(aTranslate, x);
-    gl.uniformMatrix4fv(mat, false, matrix);
+    x += -0.01;
+    gl.vertexAttrib1f(deg, x);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    requestAnimationFrame(animation);
+    requestAnimationFrame(animation)
   }
 
   animation()
