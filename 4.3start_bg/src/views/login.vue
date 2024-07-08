@@ -90,6 +90,8 @@ onMounted(() => {
   initRenderer();
   initOrbitControls();
   animate();
+
+  window.addEventListener('resize', onWindowResize, false);
 });
 // 初始化场景
 const initScene = () => {
@@ -286,6 +288,14 @@ const initOrbitControls = () => {
   controls.enabled = true;
   controls.update();
 };
+
+// 响应式调整大小
+const onWindowResize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
 
 // 动画刷新
 const animate = () => {
