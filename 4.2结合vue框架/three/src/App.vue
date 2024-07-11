@@ -4,10 +4,11 @@
 
 <script setup>
 // 绘制一个几何体
-import * as THREE from "three";
-import { onMounted } from "vue";
+import * as THREE from 'three';
+import { onMounted } from 'vue';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 // 创建场景
 // 场景能够让你在什么地方、摆放什么东西来交给three.js来渲染，这是你放置物体、灯光和摄像机的地方。
@@ -25,28 +26,37 @@ camera.position.z = 10;
 const material = new THREE.MeshBasicMaterial({
   color: 0x00ff33,
   wireframe: true,
-})
+});
 
 // 创建GLTF实例
 const loader = new GLTFLoader();
-
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath(
+  'https://www.gstatic.com/draco/versioned/decoders/1.5.6/'
+);
+dracoLoader.setDecoderConfig({ type: 'js' }); //使用js方式解压
+dracoLoader.preload(); //初始化_initDecoder 解码器
+loader.setDRACOLoader(dracoLoader);
 // 加载GLTF模型
-loader.load("./01.glb", (gltf) => {
-  console.log(gltf, 28);
-  gltf.scene.traverse(function (children) {
-    // 遍历模型中的物体
-    console.log(children, 32);
-    if (children.name.includes('立方体')) {
-      children.caseShadow = true;
-      children.material = material; 
-    }
-    // 放被子的架子
-    if (children.name.includes('棱角球')) {
-      children.receiveShadow = true;
-    }
-  });
-  scene.add(gltf.scene);
-});
+loader.load(
+  './direshebei.glb',
+  (gltf) => {
+    console.log(gltf, 28);
+    gltf.scene.traverse(function (children) {
+      // 遍历模型中的物体
+      console.log(children, 32);
+      if (children.name.includes('立方体')) {
+        children.caseShadow = true;
+        children.material = material;
+      }
+      // 放被子的架子
+      if (children.name.includes('棱角球')) {
+        children.receiveShadow = true;
+      }
+    });
+    scene.add(gltf.scene);
+  },
+);
 
 // 添加环境光
 const light = new THREE.AmbientLight(0x404040, 1);
@@ -72,9 +82,6 @@ scene.add(new THREE.PointLightHelper(pointLight, 0.1));
 // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // pointLight.castShadow = true;
 
-
-
-
 onMounted(() => {
   // 创建渲染器
   const renderer = new THREE.WebGLRenderer();
@@ -83,7 +90,7 @@ onMounted(() => {
   // 添加阴影的渲染
   renderer.shadowMap.enabled = true;
   // 将渲染器添加到页面
-  document.getElementById("container").appendChild(renderer.domElement);
+  document.getElementById('container').appendChild(renderer.domElement);
 
   // 添加轨道控制器
   const controls = new OrbitControls(camera, renderer.domElement);
